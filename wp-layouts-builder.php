@@ -9,6 +9,7 @@ Author URI: http://logaritm.ca
 License: MIT
 Copyright: Jean-Philippe Dery
 Mention: JBLP (jblp.ca)
+Text Domain: wp-layouts-builder
 */
 
 define('WP_LAYOUT_BUILDER_VERSION', '1.0.0');
@@ -21,20 +22,20 @@ require_once __DIR__ . '/lib/functions.php';
 //------------------------------------------------------------------------------
 
 $labels = array(
-	'name'               => _x('Layouts', 'post type general name', 'your-plugin-textdomain' ),
-	'singular_name'      => _x('Layout', 'post type singular name', 'your-plugin-textdomain' ),
-	'menu_name'          => _x('Layouts', 'admin menu', 'your-plugin-textdomain' ),
-	'name_admin_bar'     => _x('Layout', 'add new on admin bar', 'your-plugin-textdomain' ),
-	'add_new'            => _x('Add new', 'Layout', 'your-plugin-textdomain' ),
-	'add_new_item'       => __('Add new layout', 'your-plugin-textdomain' ),
-	'new_item'           => __('New layout', 'your-plugin-textdomain' ),
-	'edit_item'          => __('Edit layout', 'your-plugin-textdomain' ),
-	'view_item'          => __('View layout', 'your-plugin-textdomain' ),
-	'all_items'          => __('All layouts', 'your-plugin-textdomain' ),
-	'search_items'       => __('Search layouts', 'your-plugin-textdomain' ),
-	'parent_item_colon'  => __('Parent layouts:', 'your-plugin-textdomain' ),
-	'not_found'          => __('No layouts found.', 'your-plugin-textdomain' ),
-	'not_found_in_trash' => __('No layouts found in Trash.', 'your-plugin-textdomain' )
+	'name'               => _x('Layouts', 'post type general name', 'wp-layouts-builder'),
+	'singular_name'      => _x('Layout', 'post type singular name', 'wp-layouts-builder'),
+	'menu_name'          => _x('Layouts', 'admin menu', 'wp-layouts-builder'),
+	'name_admin_bar'     => _x('Layout', 'add new on admin bar', 'wp-layouts-builder'),
+	'add_new'            => _x('Add new', 'Layout', 'wp-layouts-builder'),
+	'add_new_item'       => __('Add new layout', 'wp-layouts-builder'),
+	'new_item'           => __('New layout', 'wp-layouts-builder'),
+	'edit_item'          => __('Edit layout', 'wp-layouts-builder'),
+	'view_item'          => __('View layout', 'wp-layouts-builder'),
+	'all_items'          => __('All layouts', 'wp-layouts-builder'),
+	'search_items'       => __('Search layouts', 'wp-layouts-builder'),
+	'parent_item_colon'  => __('Parent layouts:', 'wp-layouts-builder'),
+	'not_found'          => __('No layouts found.', 'wp-layouts-builder'),
+	'not_found_in_trash' => __('No layouts found in Trash.', 'wp-layouts-builder')
 );
 
 register_post_type('wplb-layout', array(
@@ -73,14 +74,14 @@ add_action('init', function() {
 
 	if (function_exists('acf_add_local_field_group')) acf_add_local_field_group(array(
 		'key' => 'group_57dab63eb6a82',
-		'title' => 'Layout',
+		'title' => __('Layout', 'wp-layouts-builder'),
 		'fields' => array(
 			array(
 				'key' => 'field_57dab64ad6e4a',
-				'label' => 'Layout',
+				'label' => __('Template', 'wp-layouts-builder'),
 				'name' => 'layout',
 				'type' => 'select',
-				'instructions' => 'This is an instruction',
+				'instructions' => '',
 				'required' => 0,
 				'conditional_logic' => 0,
 				'wrapper' => array(
@@ -121,12 +122,20 @@ add_action('init', function() {
 });
 
 /**
+ * @action plugins_loaded
+ * @since 1.0.1
+ */
+add_action('plugins_loaded', function() {
+	load_plugin_textdomain('wp-layouts-builder', false, dirname(plugin_basename( __FILE__ )) . '/languages');
+});
+
+/**
  * @action admin_menu
  * @since 1.0.0
  */
 add_action('admin_menu', function() {
 	global $submenu;
-	$submenu['themes.php'][] = array('Layouts', 'manage_options', 'edit.php?post_type=wplb-layout');
+	$submenu['themes.php'][] = array(__('Layouts', 'wp-layouts-builder'), 'manage_options', 'edit.php?post_type=wplb-layout');
 });
 
 /**
@@ -156,7 +165,7 @@ add_filter('wpbb/content_types', function($context) {
 add_filter('wpbb/metabox_title', function($title, $post_type) {
 
 	if ($post_type == 'wplb-layout') {
-		return 'Layout';
+		return __('Layout', 'wp-layouts-builder');
 	}
 
 	return $title;
@@ -220,9 +229,9 @@ add_filter('wpbb/preview_header', function($header, $block) {
 
 			?>
 
-			<label>Inherits:</label>
+			<label><?php echo __('Inherits:', 'wp-layouts-builder') ?></label>
 			<select name="_wplb_layouts[<?php echo $block->get_block_id() ?>]">
-				<option>Do not inherit an existing layout</option>
+				<option><?php echo __('Do not inherit an existing layout', 'wp-layouts-builder') ?></option>
 				<?php foreach ($layouts as $layout) : ?>
 					<option <?php echo $layout['selected'] ? 'selected="selected"' : '' ?> value="<?php echo $layout['id'] ?>">
 						<?php echo $layout['name'] ?>
@@ -376,3 +385,18 @@ add_action('wpbb/save_block', function($stack_id, $blocks) {
 	update_post_meta($stack_id, '_wplb_layouts', $layouts);
 
 }, 10, 2);
+
+//------------------------------------------------------------------------------
+// WPML
+//------------------------------------------------------------------------------
+
+/**
+ * Removes the Translate metabox from certain content type.
+ * @action admin_head
+ * @since 1.0.1
+ */
+add_action('admin_head', function() {
+
+	remove_meta_box('icl_div_config','wplb-layout', 'normal');
+
+}, 99);
